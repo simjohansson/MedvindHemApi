@@ -17,9 +17,9 @@ namespace MedvindhemApi.Controllers
         }        
         
         [HttpPost, Route("setroute")]
-        public async Task<string> SetRoute([FromBody] Coordinate[] routeCoordinates)
+        public async Task<string> GetWind([FromBody] DirectionInput directionInput)
         {
-            return await _smhiService.GetWeatherDataAsync();
+            return await _smhiService.GetWeatherDataAsync(directionInput);
         }      
     }
 }
