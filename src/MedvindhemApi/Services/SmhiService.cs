@@ -62,9 +62,14 @@ namespace MedvindhemApi.Services
                 _cache.Set("stationer", stationDtos, cacheEntryOptions);
             }
 
-            var nearestStation = stationDtos.OrderBy(x => Math.Sqrt((x.Coordinate.Latitude - halfwayPoint.Latitude) * (x.Coordinate.Latitude - halfwayPoint.Latitude) + (x.Coordinate.Longitude - halfwayPoint.Longitude) * (x.Coordinate.Longitude - halfwayPoint.Longitude))).First(t => t.WindDirection != null && t.WindSpeed != null);
-            
+            var nearestStation = stationDtos.OrderBy(x => DistanceToStation(x, halfwayPoint)).First(t => t.WindDirection != null && t.WindSpeed != null);
+
             return JsonConvert.SerializeObject(value: nearestStation);
+        }
+
+        private static double DistanceToStation(StationDto station, Coordinate halfwayPoint)
+        {
+            return Math.Sqrt((station.Coordinate.Latitude - halfwayPoint.Latitude) * (station.Coordinate.Latitude - halfwayPoint.Latitude) + (station.Coordinate.Longitude - halfwayPoint.Longitude) * (station.Coordinate.Longitude - halfwayPoint.Longitude));
         }
 
         private static double DegreeBearing(DirectionInput directionInput)
