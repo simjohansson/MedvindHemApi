@@ -18,7 +18,11 @@ namespace MedvindhemApi.Services
         private IMemoryCache _cache;
         private readonly SmhiOptions _smhiOptions;
         private static HttpClient client = new HttpClient();
-
+        private readonly int RIGHT_ANGLE_TAIL_WIND = 45;
+        private readonly int RIGHT_ANGLE_HEAD_WIND = 135;
+        private readonly int LEFT_ANGLE_HEAD_WIND = 225;
+        private readonly int LEFT_ANGLE_TAIL_WIND = 315;
+        private static double _currentBearing;
         public SmhiService(IMemoryCache cache, IOptions<SmhiOptions> smhiOptions)
         {
             _cache = cache;
@@ -33,7 +37,7 @@ namespace MedvindhemApi.Services
                 Longitude = (directionInput.FromCoordinate.Longitude + directionInput.ToCoordinate.Longitude) / 2,
             };
 
-            var degreeBearing = DegreeBearing(directionInput);
+            _currentBearing = DegreeBearing(directionInput);
 
             if (!_cache.TryGetValue("stationer", out List<StationDto> stationDtos))
             {
@@ -63,8 +67,36 @@ namespace MedvindhemApi.Services
             }
 
             var nearestStation = stationDtos.OrderBy(x => DistanceToStation(x, halfwayPoint)).First(t => t.WindDirection != null && t.WindSpeed != null);
+            var result = string.Empty;
+            var windDirection = (Int32.Parse(nearestStation.WindDirection) + 180) % 360;
 
-            return JsonConvert.SerializeObject(value: nearestStation);
+            if (DegreeDistance(windDirection, SumDegrees(LEFT_ANGLE_TAIL_WIND)) <= 90 && DegreeDistance(windDirection, SumDegrees(RIGHT_ANGLE_TAIL_WIND)) <= 90)
+            {
+                result = "Tail wind! :)";
+            }
+            else if (DegreeDistance(windDirection, SumDegrees(RIGHT_ANGLE_HEAD_WIND)) <= 90 && DegreeDistance(windDirection, SumDegrees(LEFT_ANGLE_HEAD_WIND)) <= 90)
+            {
+                result = "Head wind! ;(";
+            }
+            else
+            {
+                result = "Side wind!";
+            }
+
+            return JsonConvert.SerializeObject(value: result);
+        }
+
+        private int DegreeDistance(int alpha, int beta)
+        {
+            int phi = Math.Abs(beta - alpha) % 360;
+            int distance = phi > 180 ? 360 - phi : phi;
+            return distance;
+        }
+
+
+        private int SumDegrees(int degree)
+        {
+            return (degree + (int)_currentBearing) % 360;
         }
 
         private static double DistanceToStation(StationDto station, Coordinate halfwayPoint)
