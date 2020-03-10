@@ -38,7 +38,30 @@ namespace MedvindhemApi.Services
             };
 
             _currentBearing = DegreeBearing(directionInput);
+            List<StationDto> stationDtos = await GetStations();
 
+            var nearestStation = stationDtos.OrderBy(x => DistanceToStation(x, halfwayPoint)).First(t => t.WindDirection != null && t.WindSpeed != null);
+            var result = string.Empty;
+            var windDirection = (Int32.Parse(nearestStation.WindDirection) + 180) % 360;
+
+            if (DegreeDistance(windDirection, DegreesRelativeBearing(LEFT_ANGLE_TAIL_WIND)) <= 90 && DegreeDistance(windDirection, DegreesRelativeBearing(RIGHT_ANGLE_TAIL_WIND)) <= 90)
+            {
+                result = "Tail wind! :)";
+            }
+            else if (DegreeDistance(windDirection, DegreesRelativeBearing(RIGHT_ANGLE_HEAD_WIND)) <= 90 && DegreeDistance(windDirection, DegreesRelativeBearing(LEFT_ANGLE_HEAD_WIND)) <= 90)
+            {
+                result = "Head wind! ;(";
+            }
+            else
+            {
+                result = "Side wind!";
+            }
+
+            return JsonConvert.SerializeObject(value: result);
+        }
+
+        private async Task<List<StationDto>> GetStations()
+        {
             if (!_cache.TryGetValue("stationer", out List<StationDto> stationDtos))
             {
                 // Key not in cache, so get data.               
@@ -66,24 +89,7 @@ namespace MedvindhemApi.Services
                 _cache.Set("stationer", stationDtos, cacheEntryOptions);
             }
 
-            var nearestStation = stationDtos.OrderBy(x => DistanceToStation(x, halfwayPoint)).First(t => t.WindDirection != null && t.WindSpeed != null);
-            var result = string.Empty;
-            var windDirection = (Int32.Parse(nearestStation.WindDirection) + 180) % 360;
-
-            if (DegreeDistance(windDirection, SumDegrees(LEFT_ANGLE_TAIL_WIND)) <= 90 && DegreeDistance(windDirection, SumDegrees(RIGHT_ANGLE_TAIL_WIND)) <= 90)
-            {
-                result = "Tail wind! :)";
-            }
-            else if (DegreeDistance(windDirection, SumDegrees(RIGHT_ANGLE_HEAD_WIND)) <= 90 && DegreeDistance(windDirection, SumDegrees(LEFT_ANGLE_HEAD_WIND)) <= 90)
-            {
-                result = "Head wind! ;(";
-            }
-            else
-            {
-                result = "Side wind!";
-            }
-
-            return JsonConvert.SerializeObject(value: result);
+            return stationDtos;
         }
 
         private int DegreeDistance(int alpha, int beta)
@@ -94,7 +100,7 @@ namespace MedvindhemApi.Services
         }
 
 
-        private int SumDegrees(int degree)
+        private static int DegreesRelativeBearing(int degree)
         {
             return (degree + (int)_currentBearing) % 360;
         }

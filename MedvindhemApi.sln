@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.3
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2916EF3C-EBFF-4150-8CFD-EECE762626F8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MedvindhemApi", "src\MedvindhemApi\MedvindhemApi.csproj", "{B28E677F-DDA3-4693-B333-FC61BBEBAA7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "medvindhemapi", "src\MedvindhemApi\medvindhemapi.csproj", "{B28E677F-DDA3-4693-B333-FC61BBEBAA7F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
